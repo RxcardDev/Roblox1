@@ -23,24 +23,32 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
-pcall(function()
+if setclipboard then
     setclipboard("https://lootlab.io/script-key-link")
-end)
-
-Rayfield:Notify({
-    Title = "Key System",
-    Content = "Link copied: https://lootlab.io/script-key-link",
-    Duration = 6
-})
+    Rayfield:Notify({
+        Title = "Key System",
+        Content = "Link copied to clipboard!",
+        Duration = 6
+    })
+else
+    Rayfield:Notify({
+        Title = "Key System",
+        Content = "Clipboard not supported. Link: https://lootlab.io/script-key-link",
+        Duration = 6
+    })
+end
 
 local LavaTab = Window:CreateTab("Lava", 4483362458)
 local BaboonTab = Window:CreateTab("Baboon", 4483362458)
+local VisualsTab = Window:CreateTab("Visuals", 4483362458)
 
 LavaTab:CreateSection("Lava")
+BaboonTab:CreateSection("Baboon")
+VisualsTab:CreateSection("Visuals")
 
-local function IsLava()
-    local LocalPlayer = game:GetService("Players").LocalPlayer
-    return LocalPlayer.Team and LocalPlayer.Team.Name:lower():find("lava")
+
+local function IsLava(player)
+    return player.Team and player.Team.Name:lower():find("lava")
 end
 
 local function InfectAll()
@@ -48,11 +56,10 @@ local function InfectAll()
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character
     if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
-
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Team and player.Team.Name:lower():find("baboon") then
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
                 task.wait(0.2)
             end
         end
@@ -62,22 +69,16 @@ end
 local function FollowSequential()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
-
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Team and player.Team.Name:lower():find("baboon") then
             local Character = LocalPlayer.Character
             if Character and Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
                 repeat task.wait(0.5) until player.Team and player.Team.Name:lower():find("lava")
             end
         end
     end
-
-    Rayfield:Notify({
-        Title = "Complete",
-        Content = "All Baboons converted to Lava",
-        Duration = 4
-    })
+    Rayfield:Notify({Title="Complete",Content="All Baboons converted to Lava",Duration=4})
 end
 
 local AutoFarmEnabled = false
@@ -92,31 +93,20 @@ LavaTab:CreateToggle({
                 local Players = game:GetService("Players")
                 local LocalPlayer = Players.LocalPlayer
                 local wasLava = false
-
                 while AutoFarmEnabled do
                     if game.PlaceId == baboonTagPlaceId then
-                        if IsLava() then
+                        if IsLava(LocalPlayer) then
                             if not wasLava then
-                                Rayfield:Notify({
-                                    Title = "Status",
-                                    Content = "You are now Lava, infecting all Baboons",
-                                    Duration = 4
-                                })
+                                Rayfield:Notify({Title="Status",Content="You are now Lava, infecting all Baboons",Duration=4})
                                 wasLava = true
                             end
                             InfectAll()
                         else
                             for _, player in ipairs(Players:GetPlayers()) do
-                                if player.Team and player.Team.Name:lower():find("lava") then
-                                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                                        LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-                                        Rayfield:Notify({
-                                            Title = "Teleport",
-                                            Content = "Teleported to Lava player: "..player.Name,
-                                            Duration = 3
-                                        })
-                                        break
-                                    end
+                                if IsLava(player) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                                    LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+                                    Rayfield:Notify({Title="Teleport",Content="Teleported to Lava player: "..player.Name,Duration=3})
+                                    break
                                 end
                             end
                         end
@@ -132,37 +122,125 @@ LavaTab:CreateButton({
     Name = "Follow Baboons → Switch when Lava",
     Callback = function()
         if game.PlaceId == baboonTagPlaceId then
-            if IsLava() then
+            if IsLava(game:GetService("Players").LocalPlayer) then
                 FollowSequential()
             else
-                Rayfield:Notify({
-                    Title = "Team Check",
-                    Content = "You are not in the Lava team",
-                    Duration = 3
-                })
+                Rayfield:Notify({Title="Team Check",Content="You are not in the Lava team",Duration=3})
             end
         else
+            Rayfield:Notify({Title="Wrong Game",Content="This feature only works in Baboon Tag X",Duration=3})
+        end
+    end
+})
+
+
+local Players = game:GetService("Players")
+local selectedTarget = nil
+local HuntActive = false
+
+local function GetPlayerNames()
+    local names = {}
+    for _,plr in ipairs(Players:GetPlayers()) do
+        if plr ~= Players.LocalPlayer then
+            table.insert(names, plr.Name)
+        end
+    end
+    return names
+end
+
+local HuntDropdown = LavaTab:CreateDropdown({
+    Name = "Select Player to Hunt",
+    Options = GetPlayerNames(),
+    CurrentOption = "",
+    Flag = "HuntTarget",
+    Callback = function(Option)
+        if typeof(Option) == "table" then
+            selectedTarget = Option[1]
+        else
+            selectedTarget = Option
+        end
+    end
+})
+
+LavaTab:CreateToggle({
+    Name = "Hunt Selected Player",
+    CurrentValue = false,
+    Flag = "HuntToggle",
+    Callback = function(Value)
+        local lp = Players.LocalPlayer
+
+        if Value then
+           
+            if not IsLava(lp) then
+                Rayfield:Notify({
+                    Title = "Hunt",
+                    Content = "You must be Lava to hunt!",
+                    Duration = 3
+                })
+                return
+            end
+
+            if not selectedTarget or selectedTarget == "" then
+                Rayfield:Notify({
+                    Title = "Hunt",
+                    Content = "No player selected!",
+                    Duration = 3
+                })
+                return
+            end
+
+            local target = Players:FindFirstChild(selectedTarget)
+            if not target then
+                Rayfield:Notify({
+                    Title = "Hunt",
+                    Content = "Target not found in server!",
+                    Duration = 3
+                })
+                return
+            end
+
+            HuntActive = true
             Rayfield:Notify({
-                Title = "Wrong Game",
-                Content = "This feature only works in Baboon Tag X",
+                Title = "Hunt",
+                Content = "Now hunting "..target.Name.." until infected!",
+                Duration = 4
+            })
+
+            task.spawn(function()
+                while HuntActive and IsLava(lp) and target and target.Team and target.Team.Name:lower():find("baboon") do
+                    if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                        lp.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+                    end
+                    task.wait(0.3)
+                end
+                HuntActive = false
+                Rayfield:Notify({
+                    Title = "Hunt",
+                    Content = target.Name.." is now Lava or hunt stopped.",
+                    Duration = 4
+                })
+            end)
+        else
+            HuntActive = false
+            Rayfield:Notify({
+                Title = "Hunt",
+                Content = "Hunt stopped.",
                 Duration = 3
             })
         end
     end
 })
 
-BaboonTab:CreateSection("Baboon")
-
 BaboonTab:CreateSlider({
     Name = "WalkSpeed Modifier",
-    Range = {16, 100},
+    Range = {16,100},
     Increment = 1,
     CurrentValue = 16,
     Flag = "WalkSpeed",
     Callback = function(Value)
-        local LocalPlayer = game:GetService("Players").LocalPlayer
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = Value
+        local lp = game:GetService("Players").LocalPlayer
+        if lp.Character and lp.Character:FindFirstChildOfClass("Humanoid") then
+            lp.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = Value
         end
     end
 })
@@ -170,27 +248,22 @@ BaboonTab:CreateSlider({
 BaboonTab:CreateButton({
     Name = "Create AFK Win Platform",
     Callback = function()
-        local LocalPlayer = game:GetService("Players").LocalPlayer
-        local Character = LocalPlayer.Character
+        local lp = game:GetService("Players").LocalPlayer
+        local Character = lp.Character
         if Character and Character:FindFirstChild("HumanoidRootPart") then
             local platform = Instance.new("Part")
-            platform.Size = Vector3.new(100, 5, 100)
-            platform.Position = Character.HumanoidRootPart.Position + Vector3.new(0, 1200, 0)
+            platform.Size = Vector3.new(100,5,100)
+            platform.Position = Character.HumanoidRootPart.Position + Vector3.new(0,1200,0)
             platform.Anchored = true
             platform.Transparency = 1
             platform.CanCollide = true
             platform.Parent = workspace
-
-            Character.HumanoidRootPart.CFrame = platform.CFrame + Vector3.new(0, 5, 0)
-
-            Rayfield:Notify({
-                Title = "AFK Platform",
-                Content = "Invisible platform created 1200 studs above the map",
-                Duration = 5
-            })
+            Character.HumanoidRootPart.CFrame = platform.CFrame + Vector3.new(0,5,0)
+            Rayfield:Notify({Title="AFK Platform",Content="Invisible platform created 1200 studs above the map",Duration=5})
         end
     end
 })
+
 
 local InfiniteJumpEnabled = false
 BaboonTab:CreateToggle({
@@ -206,8 +279,120 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     if InfiniteJumpEnabled then
         local lp = game:GetService("Players").LocalPlayer
         if lp.Character and lp.Character:FindFirstChildOfClass("Humanoid") then
-            lp.Character:FindFirstChildOfClass("Humanoid").JumpPower = 30 -- salto más bajo
+            lp.Character:FindFirstChildOfClass("Humanoid").JumpPower = 30
             lp.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
         end
+    end
+end)
+
+
+local FlyEnabled = false
+local lp = game:GetService("Players").LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+
+BaboonTab:CreateToggle({
+    Name = "Fly",
+    CurrentValue = false,
+    Flag = "FlyToggle",
+    Callback = function(Value)
+        FlyEnabled = Value
+        if FlyEnabled then
+            Rayfield:Notify({Title="Fly",Content="Fly enabled",Duration=3})
+        else
+            Rayfield:Notify({Title="Fly",Content="Fly disabled",Duration=3})
+        end
+    end
+})
+
+RS.RenderStepped:Connect(function()
+    if FlyEnabled and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = lp.Character.HumanoidRootPart
+        local moveDir = Vector3.new(0,0,0)
+
+        if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + hrp.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - hrp.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - hrp.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + hrp.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0,1,0) end
+        if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir + Vector3.new(0,-1,0) end
+
+        hrp.Velocity = moveDir * 50 -- velocidad de vuelo
+    end
+end)
+
+
+local ESPEnabled, ShowChams = false,false
+
+local function AddChams(player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = player.Character.HumanoidRootPart
+        if ShowChams then
+            if not hrp:FindFirstChild("Cham") then
+                local box = Instance.new("BoxHandleAdornment")
+                box.Name = "Cham"
+                box.Adornee = hrp
+                box.Size = hrp.Size + Vector3.new(2,2,2)
+                box.Color3 = Color3.new(1,0,0) -- rojo
+                box.Transparency = 0.5
+                box.ZIndex = 0
+                box.AlwaysOnTop = true -- se ve a través de paredes
+                box.Parent = hrp
+            end
+        else
+            if hrp:FindFirstChild("Cham") then
+                hrp.Cham:Destroy()
+            end
+        end
+    end
+end
+
+local function UpdateESP()
+    for _,player in ipairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= game:GetService("Players").LocalPlayer then
+            if IsLava(player) then
+                if ESPEnabled then
+                    AddChams(player)
+                else
+                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local hrp = player.Character.HumanoidRootPart
+                        if hrp:FindFirstChild("Cham") then hrp.Cham:Destroy() end
+                    end
+                end
+            else
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = player.Character.HumanoidRootPart
+                    if hrp:FindFirstChild("Cham") then hrp.Cham:Destroy() end
+                end
+            end
+        end
+    end
+end
+
+
+VisualsTab:CreateToggle({
+    Name = "Enable ESP (Lava)",
+    CurrentValue = false,
+    Flag = "ESPEnabled",
+    Callback = function(Value)
+        ESPEnabled = Value
+        UpdateESP()
+    end
+})
+
+VisualsTab:CreateToggle({
+    Name = "Chams (Through Walls)",
+    CurrentValue = false,
+    Flag = "ShowChams",
+    Callback = function(Value)
+        ShowChams = Value
+        UpdateESP()
+    end
+})
+
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if ESPEnabled then
+        UpdateESP()
     end
 end)
