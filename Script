@@ -286,41 +286,18 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
 end)
 
 
-local FlyEnabled = false
-local lp = game:GetService("Players").LocalPlayer
-local UIS = game:GetService("UserInputService")
-local RS = game:GetService("RunService")
-
-BaboonTab:CreateToggle({
-    Name = "Fly",
-    CurrentValue = false,
-    Flag = "FlyToggle",
-    Callback = function(Value)
-        FlyEnabled = Value
-        if FlyEnabled then
-            Rayfield:Notify({Title="Fly",Content="Fly enabled",Duration=3})
-        else
-            Rayfield:Notify({Title="Fly",Content="Fly disabled",Duration=3})
-        end
+-- FlyGuiV3 desde GitHub (BaboonTab)
+BaboonTab:CreateButton({
+    Name = "Activate FlyGuiV3",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
+        Rayfield:Notify({
+            Title = "Fly",
+            Content = "FlyGuiV3 activated from GitHub",
+            Duration = 3
+        })
     end
 })
-
-RS.RenderStepped:Connect(function()
-    if FlyEnabled and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = lp.Character.HumanoidRootPart
-        local moveDir = Vector3.new(0,0,0)
-
-        if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + hrp.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - hrp.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - hrp.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + hrp.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0,1,0) end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir + Vector3.new(0,-1,0) end
-
-        hrp.Velocity = moveDir * 50 -- velocidad de vuelo
-    end
-end)
-
 
 local ESPEnabled, ShowChams = false,false
 
