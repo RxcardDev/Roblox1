@@ -1,42 +1,73 @@
+-- 🔧 Copia el link de Loot Labs al portapapeles
+if setclipboard then
+    setclipboard("https://loot-link.com/s?Vv9hbwuo")
+end
+
+-- 🔧 Obtener nombre del juego actual
+local MarketplaceService = game:GetService("MarketplaceService")
+local success, info = pcall(function()
+    return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+
+local gameName = "Unknown Game"
+if success and info and info.Name then
+    gameName = info.Name
+end
+
+-- 🔧 Guardar valores originales de Lighting (por si quieres restaurar luego)
+local Lighting = game:GetService("Lighting")
+local originalClockTime = Lighting.ClockTime
+local originalBrightness = Lighting.Brightness
+local originalAmbient = Lighting.Ambient
+local originalGlobalShadows = Lighting.GlobalShadows
+
+-- 🔧 Cargar Rayfield UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
-local baboonTagPlaceId = 73908022013371
-
+-- 🔧 Crear ventana principal
 local Window = Rayfield:CreateWindow({
-    Name = "Rayfield Hub - Baboon Tag X",
-    LoadingTitle = "Loading Hub...",
-    LoadingSubtitle = "by Ricardo",
+    Name = "Femboy Hub | " .. gameName,
+    LoadingTitle = "Ricardo's Interface Suite",
+    LoadingSubtitle = "Custom Scripts & Features",
+    ShowText = "FemboyHub",
+    Theme = "Bloom", -- Tema gris oscuro estable
+    ToggleUIKeybind = Enum.KeyCode.RightShift,
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = true,
+
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "RayfieldConfigs",
-        FileName = "Config_"..game.PlaceId
+        FolderName = "FemboyHubConfigs",
+        FileName = gameName .. "_Config"
     },
+
+    Discord = {
+        Enabled = true,
+        Invite = "https://lootdest.org/s?nJeb407y", -- Loot Labs
+        RememberJoins = true
+    },
+
     KeySystem = true,
     KeySettings = {
-        Title = "Key System",
-        Subtitle = "Enter the access key",
-        Note = "Key link copied to clipboard",
-        FileName = "BaboonKey",
-        SaveKey = true,
+        Title = "Femboy Hub Access",
+        Subtitle = "Restricted Entry",
+        Note = "Complete Loot Labs Link to get your key (link Already Copied)",
+        FileName = "FemboyHubKey",
+        SaveKey = false, -- No guarda la key
         GrabKeyFromSite = false,
-        Key = "RicardoKey123"
+        Key = {"RicardoKey123"} -- 🔑 Tu key personalizada
     }
 })
 
-if setclipboard then
-    setclipboard("https://lootlab.io/script-key-link")
+-- 🔧 Notificación de carga exitosa
+task.delay(0.5, function()
     Rayfield:Notify({
-        Title = "Key System",
-        Content = "Link copied to clipboard!",
-        Duration = 6
+        Title = "System",
+        Content = "Script Successfully Loaded ✅",
+        Duration = 4,
+        Image = 4483362458
     })
-else
-    Rayfield:Notify({
-        Title = "Key System",
-        Content = "Clipboard not supported. Link: https://lootlab.io/script-key-link",
-        Duration = 6
-    })
-end
+end)
 
 local LavaTab = Window:CreateTab("Lava", 4483362458)
 local BaboonTab = Window:CreateTab("Baboon", 4483362458)
