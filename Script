@@ -26,7 +26,7 @@ local Window = Rayfield:CreateWindow({
     Name = "Femboy Hub | " .. gameName,
     LoadingTitle = "Ricardo's Interface Suite",
     LoadingSubtitle = "Custom Scripts & Features",
-    Theme = "Dark", -- Tema compatible con Delta
+    Theme = "Bloom",
     ToggleUIKeybind = Enum.KeyCode.RightShift,
     DisableRayfieldPrompts = false,
 
