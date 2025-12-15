@@ -1,4 +1,3 @@
-
 if setclipboard then
     setclipboard("https://loot-link.com/s?Vv9hbwuo")
 end
@@ -27,7 +26,7 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Ricardo's Interface Suite",
     LoadingSubtitle = "Custom Scripts & Features",
     ShowText = "FemboyHub",
-    Theme = "Default", -- Tema gris oscuro estable
+    Theme = "Default", -- Usa "Dark" si Delta sigue fallando
     ToggleUIKeybind = Enum.KeyCode.RightShift,
     DisableRayfieldPrompts = false,
     DisableBuildWarnings = true,
@@ -50,12 +49,13 @@ local Window = Rayfield:CreateWindow({
         Subtitle = "Restricted Entry",
         Note = "Complete Loot Labs Link to get your key (link Already Copied)",
         FileName = "FemboyHubKey",
-        SaveKey = false, -- No guarda la key
+        SaveKey = false,
         GrabKeyFromSite = false,
         Key = {"RicardoKey123"} -- 🔑 Tu key personalizada
     }
 })
 
+-- ✅ Confirmación visual de carga
 task.delay(0.5, function()
     Rayfield:Notify({
         Title = "System",
@@ -64,6 +64,7 @@ task.delay(0.5, function()
         Image = 4483362458
     })
 end)
+
 
 local LavaTab = Window:CreateTab("Lava", 4483362458)
 local BaboonTab = Window:CreateTab("Baboon", 4483362458)
