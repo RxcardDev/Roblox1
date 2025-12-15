@@ -25,12 +25,12 @@ local originalGlobalShadows = Lighting.GlobalShadows
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 local baboonTagPlaceId = 73908022013371
 
--- 🪟 Crear ventana principal
+-- 🪟 Crear ventana principal (sin Discord, sin extras que rompen)
 local Window = Rayfield:CreateWindow({
     Name = "Femboy Hub | " .. gameName,
     LoadingTitle = "Ricardo's Interface Suite",
     LoadingSubtitle = "Custom Scripts & Features",
-    Theme = "Dark", -- usa Dark para máxima compatibilidad en Delta
+    Theme = "Dark", -- Tema compatible con Delta
     ToggleUIKeybind = Enum.KeyCode.RightShift,
     DisableRayfieldPrompts = false,
 
@@ -38,12 +38,6 @@ local Window = Rayfield:CreateWindow({
         Enabled = true,
         FolderName = "FemboyHubConfigs",
         FileName = gameName .. "_Config"
-    },
-
-    Discord = {
-        Enabled = true,
-        Invite = "https://lootdest.org/s?nJeb407y", -- Loot Labs
-        RememberJoins = true
     },
 
     KeySystem = true,
@@ -71,6 +65,7 @@ end)
 -- 🧪 Tab de prueba para confirmar que la UI aparece
 local TabMain = Window:CreateTab("Main")
 TabMain:CreateLabel("Si ves esto, Rayfield funciona ✅")
+
 
 
 
