@@ -1,9 +1,8 @@
--- 📋 Copia automática del link de LootLabs
+
 if setclipboard then
     setclipboard("https://loot-link.com/s?Vv9hbwuo")
 end
 
--- 🧠 Obtener el nombre del juego de forma segura
 local MarketplaceService = game:GetService("MarketplaceService")
 local success, info = pcall(function()
     return MarketplaceService:GetProductInfo(game.PlaceId)
@@ -14,18 +13,15 @@ if success and info and info.Name then
     gameName = info.Name
 end
 
--- 💡 Guardar Lighting original por si se modifica luego
 local Lighting = game:GetService("Lighting")
 local originalClockTime = Lighting.ClockTime
 local originalBrightness = Lighting.Brightness
 local originalAmbient = Lighting.Ambient
 local originalGlobalShadows = Lighting.GlobalShadows
 
--- 🧱 Cargar Rayfield UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 local baboonTagPlaceId = 73908022013371
 
--- 🪟 Crear ventana principal (sin Discord, sin extras que rompen)
 local Window = Rayfield:CreateWindow({
     Name = "Femboy Hub | " .. gameName,
     LoadingTitle = "Ricardo's Interface Suite",
@@ -52,7 +48,6 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
--- ✅ Confirmación visual de carga
 task.delay(0.5, function()
     Rayfield:Notify({
         Title = "System",
@@ -61,13 +56,6 @@ task.delay(0.5, function()
         Image = 4483362458
     })
 end)
-
--- 🧪 Tab de prueba para confirmar que la UI aparece
-local TabMain = Window:CreateTab("Main")
-TabMain:CreateLabel("Si ves esto, Rayfield funciona ✅")
-
-
-
 
 local LavaTab = Window:CreateTab("Lava", 4483362458)
 local BaboonTab = Window:CreateTab("Baboon", 4483362458)
